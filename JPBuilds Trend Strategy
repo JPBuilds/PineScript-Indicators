@@ -1,0 +1,2 @@
+//@version=2
+strategy("JPBuilds Trend Strategy", overlay=true)

@@ -1,0 +1,2 @@
+//@version=2
+strategy("JPBuilds Reversal Strategy", overlay=true)
