@@ -1,2 +1,25 @@
-//@version=2
+//@version=4
 strategy("JPBuilds Trend Strategy", overlay=true)
+
+// INDICATORS
+// INDICATORS
+// INDICATORS
+
+// Triple MA Indicator
+shortMAShow = input(true, title="Short MA Show")
+shortMALength = input(50, title="Short MA Length")
+shortMAColour = color.orange
+mediumMAShow = input(true, title="Medium MA Show")
+mediumMALength = input(100, title="Medium MA Length")
+mediumMAColour = color.purple
+longMAShow = input(true, title="Long MA Show")
+longMALength = input(200, title="Long MA Length")
+longMAColour = color.blue
+
+shortMA = sma(close, shortMALength)
+mediumMA = sma(close, mediumMALength)
+longMA = sma(close, longMALength)
+
+plot(shortMAShow ? shortMA : na, title="Short MA", color=shortMAColour, linewidth=2)
+plot(mediumMAShow ? mediumMA : na, title="Medium MA", color=mediumMAColour, linewidth=2)
+plot(longMAShow ? longMA : na, title="Long MA", color=longMAColour, linewidth=2)
