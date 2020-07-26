@@ -39,7 +39,7 @@ plotchar(sellSetup == 5 ? true : na, title="Sell Setup 5", char="5", location=lo
 plotchar(sellSetup == 6 ? true : na, title="Sell Setup 6", char="6", location=location.abovebar, color=color.green)
 plotchar(sellSetup == 7 ? true : na, title="Sell Setup 7", char="7", location=location.abovebar, color=color.green)
 plotchar(sellSetup == 8 ? true : na, title="Sell Setup 8", char="8", location=location.abovebar, color=color.green)
-plotshape(sellSetup == 9 ? true : na, title="Sell Setup 9", text="9", location=location.abovebar, color=color.green, style=shape.triangledown)
+plotshape(sellSetup == 9 ? true : na, title="Sell Setup 9", text="9", location=location.abovebar, textcolor=color.green, color=color.red, style=shape.triangledown)
 
 plotchar(buySetup == 1 ? true : na, title="Buy Setup 1", char="1", location=location.abovebar, color=color.red)
 plotchar(buySetup == 2 ? true : na, title="Buy Setup 2", char="2", location=location.abovebar, color=color.red)
@@ -49,4 +49,4 @@ plotchar(buySetup == 5 ? true : na, title="Buy Setup 5", char="5", location=loca
 plotchar(buySetup == 6 ? true : na, title="Buy Setup 6", char="6", location=location.abovebar, color=color.red)
 plotchar(buySetup == 7 ? true : na, title="Buy Setup 7", char="7", location=location.abovebar, color=color.red)
 plotchar(buySetup == 8 ? true : na, title="Buy Setup 8", char="8", location=location.abovebar, color=color.red)
-plotshape(buySetup == 9 ? true : na, title="Buy Setup 9", text="9", location=location.abovebar, color=color.red, style=shape.triangleup)
+plotshape(buySetup == 9 ? true : na, title="Buy Setup 9", text="9", location=location.abovebar, textcolor=color.red, color=color.green, style=shape.triangleup)
