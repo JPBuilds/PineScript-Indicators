@@ -2,7 +2,7 @@
 // © JPBuilds
 
 //@version=4
-strategy("JPBuilds Trend Strategy", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=1, pyramiding=15)
+strategy("JPBuilds Trend Strategy", overlay=true, pyramiding=25)
 
 
 // Timeframe
