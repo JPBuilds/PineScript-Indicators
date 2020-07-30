@@ -1,52 +1,53 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © JPBuilds
+
 //@version=4
-strategy("JPBuilds Trend Strategy", overlay=true)
-
-// INDICATORS
-// INDICATORS
-// INDICATORS
-
-// Triple MA Indicator
-shortMAShow = input(true, title="Short MA Show")
-shortMALength = input(50, title="Short MA Length")
-shortMAColour = color.orange
-mediumMAShow = input(true, title="Medium MA Show")
-mediumMALength = input(100, title="Medium MA Length")
-mediumMAColour = color.purple
-longMAShow = input(true, title="Long MA Show")
-longMALength = input(200, title="Long MA Length")
-longMAColour = color.blue
-
-shortMA = sma(close, shortMALength)
-mediumMA = sma(close, mediumMALength)
-longMA = sma(close, longMALength)
-
-plot(shortMAShow ? shortMA : na, title="Short MA", color=shortMAColour, linewidth=2)
-plot(mediumMAShow ? mediumMA : na, title="Medium MA", color=mediumMAColour, linewidth=2)
-plot(longMAShow ? longMA : na, title="Long MA", color=longMAColour, linewidth=2)
+strategy("JPBuilds Trend Strategy", overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=1, pyramiding=15)
 
 
-// TD Sequencial
-sellSetup = 0
-sellSetup := close > close[4] ? (sellSetup[1] == 9 ? 1 : sellSetup[1] + 1) : 0
-buySetup = 0
-buySetup := close[0] < close[4] ? (buySetup[1] == 9 ? 1 : buySetup[1] + 1) : 0
+// Timeframe
+fromMonth = input(1, title = "From Month", minval = 1, maxval = 12)
+fromDay   = input(1, title = "From Day", minval = 1, maxval = 31)
+fromYear  = input(2000, title = "From Year", minval = 2000)
+fromTimestamp = timestamp(fromYear, fromMonth, fromDay, 0, 0)
 
-plotchar(sellSetup == 1 ? true : na, title="Sell Setup 1", char="1", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 2 ? true : na, title="Sell Setup 2", char="2", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 3 ? true : na, title="Sell Setup 3", char="3", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 4 ? true : na, title="Sell Setup 4", char="4", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 5 ? true : na, title="Sell Setup 5", char="5", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 6 ? true : na, title="Sell Setup 6", char="6", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 7 ? true : na, title="Sell Setup 7", char="7", location=location.abovebar, color=color.green)
-plotchar(sellSetup == 8 ? true : na, title="Sell Setup 8", char="8", location=location.abovebar, color=color.green)
-plotshape(sellSetup == 9 ? true : na, title="Sell Setup 9", text="9", location=location.abovebar, textcolor=color.green, color=color.red, style=shape.triangledown)
+toMonth   = input(1, title = "To Month", minval = 1, maxval = 12)
+toDay     = input(1, title = "To Day", minval = 1, maxval = 31)
+toYear    = input(9999, title = "To Year", minval = 2001)
+toTimestamp = timestamp(toYear, toMonth, toDay, 0, 0)
 
-plotchar(buySetup == 1 ? true : na, title="Buy Setup 1", char="1", location=location.abovebar, color=color.red)
-plotchar(buySetup == 2 ? true : na, title="Buy Setup 2", char="2", location=location.abovebar, color=color.red)
-plotchar(buySetup == 3 ? true : na, title="Buy Setup 3", char="3", location=location.abovebar, color=color.red)
-plotchar(buySetup == 4 ? true : na, title="Buy Setup 4", char="4", location=location.abovebar, color=color.red)
-plotchar(buySetup == 5 ? true : na, title="Buy Setup 5", char="5", location=location.abovebar, color=color.red)
-plotchar(buySetup == 6 ? true : na, title="Buy Setup 6", char="6", location=location.abovebar, color=color.red)
-plotchar(buySetup == 7 ? true : na, title="Buy Setup 7", char="7", location=location.abovebar, color=color.red)
-plotchar(buySetup == 8 ? true : na, title="Buy Setup 8", char="8", location=location.abovebar, color=color.red)
-plotshape(buySetup == 9 ? true : na, title="Buy Setup 9", text="9", location=location.abovebar, textcolor=color.red, color=color.green, style=shape.triangleup)
+isWithinTimeframe = iff(time >= fromTimestamp and time <= toTimestamp, true, false)
+
+
+// Trend Direction MA
+trendMALength = input(200, minval=5, maxval=1000, title="Trend Direction MA Length")
+trendMA = sma(close, trendMALength)
+
+sellMAFlag = iff(close[0] < trendMA[0], true, false)
+buyMAFlag = iff(close[0] > trendMA[0], true, false)
+
+
+// MACD Cross
+[macdLine, signalLine, histLine] = macd(close, 12, 26, 9)
+isMACDShrinking = iff(histLine[0] < histLine[1] and histLine[1] < histLine[2] and histLine[2] < histLine[3], true, false)
+isMACDRising = iff(histLine[0] > histLine[1] and histLine[1] > histLine[2] and histLine[2] > histLine[3], true, false)
+
+sellMACDFlag = iff(isMACDShrinking == true and histLine[0] < 0.1 and histLine[1] >= 0.1 and macdLine[0] > 0 and signalLine[0] > 0, true, false)
+buyMACDFlag = iff(isMACDRising == true and histLine[0] > -0.1 and histLine[1] < -0.1 and macdLine[0] < 0 and signalLine[0] < 0, true, false)
+
+
+// Buy/Sell Flags
+sellFlag = sellMAFlag and sellMACDFlag
+buyFlag = buyMAFlag and buyMACDFlag
+
+
+// Position Management
+useStoploss = input(false, title="Use Stoploss?")
+stoplossPercent = input(15, minval=0.1, maxval=100, title="Stoploss %") / 100
+
+if useStoploss
+    strategy.exit("stoploss", "TrendBuy", stop=strategy.position_avg_price*(1-stoplossPercent), when = isWithinTimeframe and strategy.position_size > 0)
+    strategy.exit("stoploss", "TrendSell", stop=strategy.position_avg_price*(1+stoplossPercent), when = isWithinTimeframe and strategy.position_size < 0)
+
+strategy.entry("TrendBuy", strategy.long, comment="Trend Buy", when = isWithinTimeframe and buyFlag)
+strategy.entry("TrendSell", strategy.short, comment="Trend Sell", when = isWithinTimeframe and sellFlag)
