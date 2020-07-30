@@ -1,0 +1,52 @@
+//@version=4
+study("Triple MA + TD Sequencial", overlay=true)
+
+// INDICATORS
+// INDICATORS
+// INDICATORS
+
+// Triple MA Indicator
+shortMAShow = input(true, title="Short MA Show")
+shortMALength = input(50, title="Short MA Length")
+shortMAColour = color.orange
+mediumMAShow = input(true, title="Medium MA Show")
+mediumMALength = input(100, title="Medium MA Length")
+mediumMAColour = color.purple
+longMAShow = input(true, title="Long MA Show")
+longMALength = input(200, title="Long MA Length")
+longMAColour = color.blue
+
+shortMA = sma(close, shortMALength)
+mediumMA = sma(close, mediumMALength)
+longMA = sma(close, longMALength)
+
+plot(shortMAShow ? shortMA : na, title="Short MA", color=shortMAColour, linewidth=2)
+plot(mediumMAShow ? mediumMA : na, title="Medium MA", color=mediumMAColour, linewidth=2)
+plot(longMAShow ? longMA : na, title="Long MA", color=longMAColour, linewidth=2)
+
+
+// TD Sequencial
+sellSetup = 0
+sellSetup := close > close[4] ? (sellSetup[1] == 9 ? 1 : sellSetup[1] + 1) : 0
+buySetup = 0
+buySetup := close[0] < close[4] ? (buySetup[1] == 9 ? 1 : buySetup[1] + 1) : 0
+
+plotchar(sellSetup == 1 ? true : na, title="Sell Setup 1", char="1", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 2 ? true : na, title="Sell Setup 2", char="2", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 3 ? true : na, title="Sell Setup 3", char="3", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 4 ? true : na, title="Sell Setup 4", char="4", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 5 ? true : na, title="Sell Setup 5", char="5", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 6 ? true : na, title="Sell Setup 6", char="6", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 7 ? true : na, title="Sell Setup 7", char="7", location=location.abovebar, color=color.green)
+plotchar(sellSetup == 8 ? true : na, title="Sell Setup 8", char="8", location=location.abovebar, color=color.green)
+plotshape(sellSetup == 9 ? true : na, title="Sell Setup 9", text="9", location=location.abovebar, textcolor=color.green, color=color.red, style=shape.triangledown)
+
+plotchar(buySetup == 1 ? true : na, title="Buy Setup 1", char="1", location=location.abovebar, color=color.red)
+plotchar(buySetup == 2 ? true : na, title="Buy Setup 2", char="2", location=location.abovebar, color=color.red)
+plotchar(buySetup == 3 ? true : na, title="Buy Setup 3", char="3", location=location.abovebar, color=color.red)
+plotchar(buySetup == 4 ? true : na, title="Buy Setup 4", char="4", location=location.abovebar, color=color.red)
+plotchar(buySetup == 5 ? true : na, title="Buy Setup 5", char="5", location=location.abovebar, color=color.red)
+plotchar(buySetup == 6 ? true : na, title="Buy Setup 6", char="6", location=location.abovebar, color=color.red)
+plotchar(buySetup == 7 ? true : na, title="Buy Setup 7", char="7", location=location.abovebar, color=color.red)
+plotchar(buySetup == 8 ? true : na, title="Buy Setup 8", char="8", location=location.abovebar, color=color.red)
+plotshape(buySetup == 9 ? true : na, title="Buy Setup 9", text="9", location=location.abovebar, textcolor=color.red, color=color.green, style=shape.triangleup)
