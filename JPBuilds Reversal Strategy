@@ -1,2 +1,87 @@
-//@version=2
-strategy("JPBuilds Reversal Strategy", overlay=true)
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © JPBuilds
+
+//@version=4
+strategy("JPBuilds Reversal Strategy", overlay=true, pyramiding=5)
+
+
+// Timeframe
+fromMonth = input(1, title = "From Month", minval = 1, maxval = 12)
+fromDay   = input(1, title = "From Day", minval = 1, maxval = 31)
+fromYear  = input(2000, title = "From Year", minval = 2000)
+fromTimestamp = timestamp(fromYear, fromMonth, fromDay, 0, 0)
+
+toMonth   = input(1, title = "To Month", minval = 1, maxval = 12)
+toDay     = input(1, title = "To Day", minval = 1, maxval = 31)
+toYear    = input(9999, title = "To Year", minval = 2001)
+toTimestamp = timestamp(toYear, toMonth, toDay, 0, 0)
+
+isWithinTimeframe = iff(time >= fromTimestamp and time <= toTimestamp, true, false)
+
+
+// MACD Cross
+[macdLine, signalLine, histLine] = macd(close, 12, 26, 9)
+isMACDShrinking = iff(histLine[0] < histLine[1] and histLine[1] < histLine[2] and histLine[2] < histLine[3], true, false)
+isMACDRising = iff(histLine[0] > histLine[1] and histLine[1] > histLine[2] and histLine[2] > histLine[3], true, false)
+
+sellMACDFlag = iff(isMACDShrinking == true and histLine[0] < 0.1 and histLine[1] >= 0.1, true, false)
+buyMACDFlag = iff(isMACDRising == true and histLine[0] > -0.1 and histLine[1] < -0.1, true, false)
+
+
+// TD Sequencial
+sellSetup = 0
+sellSetup := close > close[4] ? (sellSetup[1] == 9 ? 1 : sellSetup[1] + 1) : 0
+buySetup = 0
+buySetup := close[0] < close[4] ? (buySetup[1] == 9 ? 1 : buySetup[1] + 1) : 0
+
+TDcheckDown0 = sellSetup[0] == 8 and close[0] > close[1]
+TDcheckDown1 = sellSetup[1] == 8 and (close[1] > close[2] or close[0] > close[2])
+TDcheckDown2 = sellSetup[2] == 8 and (close[2] > close[3] or close[1] > close[3] or close[0] > close[2])
+TDcheckDown3 = sellSetup[3] == 8 and (close[3] > close[4] or close[2] > close[4] or close[1] > close[3]) and close[0] < close[2]
+TDcheckDown4 = sellSetup[4] == 8 and (close[4] > close[5] or close[3] > close[5] or close[2] > close[4]) and close[0] < close[3]
+TDcheckDown5 = sellSetup[5] == 8 and (close[5] > close[6] or close[4] > close[6] or close[3] > close[5]) and close[0] < close[4]
+TDcheckDown6 = sellSetup[6] == 8 and (close[6] > close[7] or close[5] > close[7] or close[4] > close[6]) and close[0] < close[5]
+TDcheckDown7 = sellSetup[7] == 8 and (close[7] > close[8] or close[6] > close[8] or close[5] > close[7]) and close[0] < close[5]
+TDcheckDown8 = sellSetup[8] == 8 and (close[8] > close[9] or close[7] > close[9] or close[6] > close[8]) and close[0] < close[6]
+TDcheckDown9 = sellSetup[9] == 8 and (close[9] > close[10] or close[8] > close[10] or close[7] > close[9]) and close[0] < close[6]
+
+TDcheckUp0 = buySetup[0] == 8 and close[0] < close[1]
+TDcheckUp1 = buySetup[1] == 8 and (close[1] < close[2] or close[0] < close[2])
+TDcheckUp2 = buySetup[2] == 8 and (close[2] < close[3] or close[1] < close[3] or close[0] < close[2])
+TDcheckUp3 = buySetup[3] == 8 and (close[3] < close[4] or close[2] < close[4] or close[1] < close[3]) and close[0] > close[2]
+TDcheckUp4 = buySetup[4] == 8 and (close[4] < close[5] or close[3] < close[5] or close[2] < close[4]) and close[0] > close[3]
+TDcheckUp5 = buySetup[5] == 8 and (close[5] < close[6] or close[4] < close[6] or close[3] < close[5]) and close[0] > close[4]
+TDcheckUp6 = buySetup[6] == 8 and (close[6] < close[7] or close[5] < close[7] or close[4] < close[6]) and close[0] > close[5]
+TDcheckUp7 = buySetup[7] == 8 and (close[7] < close[8] or close[6] < close[8] or close[5] < close[7]) and close[0] > close[5]
+TDcheckUp8 = buySetup[8] == 8 and (close[8] < close[9] or close[7] < close[9] or close[6] < close[8]) and close[0] > close[6]
+TDcheckUp9 = buySetup[9] == 8 and (close[9] < close[10] or close[8] < close[10] or close[7] < close[9]) and close[0] > close[6]
+
+TDcheckUP = iff(TDcheckUp0 or TDcheckUp1 or TDcheckUp2 or TDcheckUp3 or TDcheckUp4 or TDcheckUp5 or TDcheckUp6 or TDcheckUp7 or TDcheckUp8 or TDcheckUp9, true, false)
+TDcheckDOWN = iff(TDcheckDown0 or TDcheckDown1 or TDcheckDown2 or TDcheckDown3 or TDcheckDown4 or TDcheckDown5 or TDcheckDown6 or TDcheckDown7 or TDcheckDown8 or TDcheckDown9, true, false)
+
+
+// RSI
+RSI = rsi(close, 14)
+RSIOverbought = 70
+RSIOversold = 30
+
+RSIHighest = highest(RSI, 27)
+RSILowest = lowest(RSI, 27)
+RSICheckUp = iff(RSILowest < RSIOversold, true, false)
+RSICheckDown = iff(RSIHighest > RSIOverbought, true, false)
+
+
+// Buy/Sell Flags
+sellFlag = sellMACDFlag and TDcheckDOWN and RSICheckDown
+buyFlag = buyMACDFlag and TDcheckUP and RSICheckUp
+
+// Position Management
+useStoploss = input(true, title="Use Stoploss?")
+stoplossPercent = input(15, minval=0.1, maxval=100, title="Stoploss %") /100
+
+if useStoploss
+    strategy.exit("stoploss", "ReversalBuy", stop=strategy.position_avg_price*(1-stoplossPercent), when = isWithinTimeframe and strategy.position_size > 0)
+    strategy.exit("stoploss", "ReversalSell", stop=strategy.position_avg_price*(1+stoplossPercent), when = isWithinTimeframe and strategy.position_size < 0) 
+    
+strategy.entry("ReversalBuy", strategy.long, comment="Reversal Buy", when = isWithinTimeframe and buyFlag)
+strategy.entry("ReversalSell", strategy.short,comment="Reversal Sell", when = isWithinTimeframe and sellFlag)
